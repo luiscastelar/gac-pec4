@@ -1,0 +1,38 @@
+services:
+  mariaDB:
+    env_file: ./config/mariadb/config  
+    # Solo válidas dentro de los contenedores, no en este compose.yml
+    user: "${ID_USUARIO}:${ID_USUARIO}"
+    container_name: mariaDB
+    image: mariadb:10.11
+    # Mantener versiones LTS 10.11 hasta 2028
+    # https://mariadb.org/about/#maintenance-policy
+
+    restart: always
+
+    environment:
+      TZ: 'Europe/Madrid'
+
+    volumes:
+      - ./infra/mariadb:/var/lib/mysql
+# Importar detos con:
+#  env $(cat .env | xargs)  bash -c ' docker exec -i mariaDB mysql -u"$user" -p"$pass" "$db" < ../ejemplos/alumnos.sql '
+    ports:
+      - 3306:3306
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - ${WWW_PUERTO}:80
+    volumes:
+      - ./salida/php:/var/www/html/
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php-fpm
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: config/docker/php/Dockerfile
+    volumes:
+      - ./salida/php:/var/www/html

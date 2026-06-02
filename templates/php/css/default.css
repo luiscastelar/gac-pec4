@@ -1,0 +1,26 @@
+body{
+    background-color:#f5f6f8;
+}
+
+.crud-section{
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+
+.crud-title{
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 6px;
+}
+
+.btn a{
+    color: white;
+    text-decoration: none;
+}
+
+.container-md {
+    max-width: 90dvi;
+}

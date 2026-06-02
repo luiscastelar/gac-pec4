@@ -1,0 +1,7 @@
+        self.%%TEXTO%%_button = ttk.Button(
+            self.main_frame,
+            text="%%TEXTO%%",
+            width=20,
+            command=self.%%TEXTO%%
+        )
+        self.%%TEXTO%%_button.grid(row=%%FILA%%, column=0, pady=5)

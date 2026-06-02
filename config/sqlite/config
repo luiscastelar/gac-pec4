@@ -1,0 +1,6 @@
+SERVER_DB=db_in_sqlite.db
+PORT_DB=np
+USER_DB=np
+NAME_DB=db_in_sqlite.db
+DOCKER_DB=/var/www/html/db_in_sqlite.db
+PASS_DB=np
