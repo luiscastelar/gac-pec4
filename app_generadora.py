@@ -53,8 +53,10 @@ def main():
     metadatos = getMetadatosDb(variablesDeEntorno['SERVER_DB'])
 
     # TODO 2. Generarción de DAOs
-    logging.info("voy por aquí")
+    generateDAOs(metadatos)
     # TODO 3. WORKER
+    
+    logging.info("voy por aquí")
     # TODO 4. QUEUE-SINGLETON
     # TODO 5. DISPACHER
     # TODO 6. APP (endpoints)
@@ -73,7 +75,7 @@ def initGlobalSettings():
     utils.settings = settings
     dbComun.settings = settings
     logging.debug('0. Variables globales cargadas en settings')
-    
+
     # DONE: 1.2. Carga de variables de entorno
     tipoDB = "sqlite"
     variablesDeEntorno = loadEnvironmentVar(tipoDB)
@@ -161,6 +163,45 @@ def getDriverSalida(tipoSalida):
 
     salida.settings = settings  # Cargamos las variables globales en el driver que corresponda
     return salida
+
+
+def generateDAOs(metadatos):
+    """Generador de DAOs
+
+    Parametros:
+        - metadatos (BaseDatos) de la base de datos           
+    """
+    for tabla in metadatos.tablas:
+        columnas = ', '.join([column.nombre for column in tabla.columnas])
+        placeholders = ', '.join(['?' for _ in tabla.columnas])
+        set_clause = ', '.join([f"{columna.nombre}=?" for columna in tabla.columnas])
+        dao_content = f"""
+class {tabla.nombre.capitalize()}DAO:
+    def __init__(self, db_connection):
+        self.db_connection = db_connection
+
+    def get_{tabla.nombre}(self, id):
+        query = "SELECT * FROM {tabla.nombre} WHERE id = ?"
+        return self.db_connection.execute(query, (id,)).fetchone()
+
+    def create_{tabla.nombre}(self, data):
+        query = "INSERT INTO {tabla.nombre} ({columnas}) VALUES ({placeholders})"
+        self.db_connection.execute(query, tuple(data.values()))
+        self.db_connection.commit()
+        return self.db_connection.lastrowid
+
+    def update_{tabla.nombre}(self, id, data):
+        query = f"UPDATE {tabla.nombre} SET {set_clause} WHERE id = ?"
+        self.db_connection.execute(query, tuple(data.values()) + (id,))
+        self.db_connection.commit()
+
+    def delete_{tabla.nombre}(self, id):
+        query = "DELETE FROM {tabla.nombre} WHERE id = ?"
+        self.db_connection.execute(query, (id,))
+        self.db_connection.commit()
+"""
+        with open(f"{settings.TAREA_PATH}/daos/{tabla.nombre.capitalize()}DAO.py", 'w') as f:
+            f.write(dao_content)
 
 
 # Autocargador de programa externo
