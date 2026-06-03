@@ -37,7 +37,7 @@ LOAD_SCRIPT = 3
 # Variables globales
 # ---------------------------------------------------------------------
 logging = None
-
+variablesDeEntorno = None
 
 # ---------------------------------------------------------------------
 # Main()
@@ -45,30 +45,15 @@ logging = None
 def main():
     # DONE 0. Inicializar variables globales
     global logging
-    tipoDB = "sqlite"
+    global variablesDeEntorno
 
-    # DONE: 1.1. Inicialización de variables globales
-    logging = initGlobalSettings()
-    logging.info('0. Inicio del programa')
-
-    # DONE: 1.2. Carga de variables de entorno
-    variablesDeEntorno = loadEnvironmentVar(tipoDB)
-
-    # DONE: 1.3. Carga driver
-    db = dbComun.getDriverDB(tipoDB)
-
-    # DONE: 1.4. Comandos "normalizados" vía plantilla
-    db.comandosSQL = Env.get(settings.TAREA_PATH + 'templates/' + tipoDB + '/sql')
-
-    # TODO: 1.5. Import en db pruebas -> sólo conectar
-    dbComun.getConexionDB(db, variablesDeEntorno)
-
-    # DONE: 1.6. Generación de metadatos
-    metadatos = dbComun.generacionDeMetadatos(db)
-    print(metadatos)
+    initGlobalSettings()
 
     # TODO 1. Análisis de DB (refactorizar)
+    metadatos = getMetadatosDb(variablesDeEntorno['SERVER_DB'])
+
     # TODO 2. Generarción de DAOs
+    logging.info("voy por aquí")
     # TODO 3. WORKER
     # TODO 4. QUEUE-SINGLETON
     # TODO 5. DISPACHER
@@ -80,14 +65,35 @@ def main():
 # Funciones auxiliares
 # ----------------------------------------------------------------------
 def initGlobalSettings():
-    # DONE: 1. Cargamos las variables globales en settings
+    global logging
+    global variablesDeEntorno
+    # DONE: 0. Cargamos las variables globales en settings
     logging = settings.logger
     TUI.settings = settings
     utils.settings = settings
     dbComun.settings = settings
-    logging.debug('Variables globales cargadas en settings')
-    return logging
+    logging.debug('0. Variables globales cargadas en settings')
+    
+    # DONE: 1.2. Carga de variables de entorno
+    tipoDB = "sqlite"
+    variablesDeEntorno = loadEnvironmentVar(tipoDB)
 
+
+def getMetadatosDb(db_file: str) -> BaseDatos:
+    tipoDB = variablesDeEntorno['TIPO_DB']
+    # DONE: 1.3. Carga driver
+    db = dbComun.getDriverDB(tipoDB)
+
+    # DONE: 1.4. Comandos "normalizados" vía plantilla
+    db.comandosSQL = Env.get(settings.TAREA_PATH + 'templates/' + tipoDB + '/sql')
+
+    # TODO: 1.5. Import en db pruebas -> sólo conectar
+    dbComun.getConexionDB(db, variablesDeEntorno)
+
+    # DONE: 1.6. Generación de metadatos
+    metadatos = dbComun.generacionDeMetadatos(db)
+    logging.debug("1. Carga de metadatos")
+    return metadatos
 
 def loadDDL(tipo=DEFAULT):
     # DONE: 2. Captura DDL de entrada
