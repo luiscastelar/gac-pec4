@@ -1,13 +1,16 @@
 # ---------------------------------------------------------------------
 # Importaciones
 # ---------------------------------------------------------------------
+import subprocess
+from pathlib import Path
+
 from libs.Env import Env
 from libs.contentOfFile import File
 import libs.TUI as TUI
 import libs.utils as utils
 import settings
 import libs.dbComun as dbComun
-import sys
+
 
 # ---------------------------------------------------------------------
 # Constantes de sistema
@@ -36,7 +39,7 @@ LOAD_SCRIPT = 3
 # ---------------------------------------------------------------------
 # Variables globales
 # ---------------------------------------------------------------------
-logging = None
+log = None
 variablesDeEntorno = None
 
 # ---------------------------------------------------------------------
@@ -44,7 +47,7 @@ variablesDeEntorno = None
 # ---------------------------------------------------------------------
 def main():
     # DONE 0. Inicializar variables globales
-    global logging
+    global log
     global variablesDeEntorno
 
     initGlobalSettings()
@@ -54,12 +57,21 @@ def main():
 
     # TODO 2. Generarción de DAOs
     generateDAOs(metadatos)
+
+    log.info("voy por aquí")
+    # DONE 4. QUEUE-SINGLETON
+    # No requiere personalización. Emplearemos implementación estándard
+
     # TODO 3. WORKER
     
-    logging.info("voy por aquí")
-    # TODO 4. QUEUE-SINGLETON
+
     # TODO 5. DISPACHER
+
+
     # TODO 6. APP (endpoints)
+    NOMBRE_APP_FINAL = "app.py"
+    generateApp(metadatos, NOMBRE_APP_FINAL)
+
     # TODO 7. TESTS
 
 
@@ -67,14 +79,14 @@ def main():
 # Funciones auxiliares
 # ----------------------------------------------------------------------
 def initGlobalSettings():
-    global logging
+    global log
     global variablesDeEntorno
     # DONE: 0. Cargamos las variables globales en settings
-    logging = settings.logger
+    log = settings.initLoggin(Path(__file__).stem + ".log")
     TUI.settings = settings
     utils.settings = settings
     dbComun.settings = settings
-    logging.debug('0. Variables globales cargadas en settings')
+    log.info('0. Variables globales cargadas en settings')
 
     # DONE: 1.2. Carga de variables de entorno
     tipoDB = "sqlite"
@@ -94,8 +106,9 @@ def getMetadatosDb(db_file: str) -> BaseDatos:
 
     # DONE: 1.6. Generación de metadatos
     metadatos = dbComun.generacionDeMetadatos(db)
-    logging.debug("1. Carga de metadatos")
+    utils.printInfo("1. Carga de metadatos de la bbdd")
     return metadatos
+
 
 def loadDDL(tipo=DEFAULT):
     # DONE: 2. Captura DDL de entrada
@@ -120,15 +133,6 @@ def loadDDL(tipo=DEFAULT):
     else:
         utils.printError('Error cargando sql', settings.EXIT['NOT_FOUND'])
 
-    r'''# Para ampliaciones:
-    # DONE: Intento de inferencia de tipo de DDL
-    extensonDelArchivo = pathlib.Path(file).suffix
-    logging.debug( extensonDelArchivo )
-    # DONE: Tipo de DDL (sql, json schema, dbml)
-    tipoDDL = TUI.getTypeDDL(extensonDelArchivo)
-    logging.debug(f'Tipo de entrada: {tipoDDL}')
-    '''
-
     # DONE: Intentar inferencia de tipo de BBDD (mariadb, sqlite, oracledb,...)
     tipoDB = TUI.getTipoDB(sql)
     logging.info(f'Tipo de bbdd: {tipoDB}')
@@ -143,7 +147,7 @@ def loadEnvironmentVar(tipoDB: str) -> dict:
     variablesDeEntorno.update(
         Env.get(settings.TAREA_PATH + 'config/' + tipoDB + '/config')
     )
-    logging.debug(f'Datos conexión a variablesDeEntorno: {variablesDeEntorno}')
+    log.debug(f'Datos conexión a variablesDeEntorno: {variablesDeEntorno}')
     if len(variablesDeEntorno) > 0:
         print(f'2. Tipo {tipoDB} procesado y datos de conexión recibidos')
     else:
@@ -165,11 +169,31 @@ def getDriverSalida(tipoSalida):
     return salida
 
 
+def generateApp(metadatos, file: str):
+    """Genera la aplicación final con los endpoints correspondientes a la base de datos"""
+    BASE = settings.TAREA_PATH
+    with \
+        open(BASE + "core/app.template", "r", encoding="utf-8") as plantilla, \
+        open(BASE + "app.py", "w", encoding="utf-8") as escritura:
+        for linea in plantilla:
+            if linea == '%%WORKER%%\n':
+                """Forma correcta:
+                with open(BASE + "core/worker.template", "r", encoding="utf-8") as plantilla_worker:
+                    for linea_worker in plantilla_worker:
+                        escritura.write(linea_worker)
+                """
+                escritura.write( File().load(BASE + "core/worker.template") )
+            else:
+                escritura.write(linea)
+    log.info("6. Generar app base")
+    return None
+
+
 def generateDAOs(metadatos):
     """Generador de DAOs
 
     Parametros:
-        - metadatos (BaseDatos) de la base de datos           
+        - metadatos (BaseDatos) de la base de datos
     """
     for tabla in metadatos.tablas:
         columnas = ', '.join([column.nombre for column in tabla.columnas])
