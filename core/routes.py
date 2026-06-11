@@ -4,7 +4,7 @@
 # route nos ofrece una personalización completa de rutas y métodos
 #
 import concurrent.futures
-from flask import Blueprint, current_app, jsonify, request, Response
+from flask import Blueprint, current_app, jsonify, request, Response, make_response
 
 # Constantes globales
 WAIT = 30  # segundos a esperar la respuesta del worker
@@ -37,7 +37,7 @@ if request.method == 'POST':
     return "Mensaje de salida", 200, headers  # msg, codigo y cabeceras opcionales
 """
 
-@api.route("/coleccion/<coleccion>/<int:id>",
+@api.route("/API/v1/<coleccion>/<int:id>",
            methods=["GET", "POST", "PUT", "DELETE"]
            )
 def do(coleccion: str = "", id: int = 0) -> Response:
@@ -65,20 +65,23 @@ def do(coleccion: str = "", id: int = 0) -> Response:
     DELETE: Debe recibir el id a eliminar y devolverá lo mismo que POST
     """
     try:
-        log = settings.logging
+        log = settings.log
         future = concurrent.futures.Future()
         queue = current_app.extensions["work_queue"]
         data_back = {"ok": False, "code": 0, "msg": "No procesado"}
         match request.method:
             case "GET":
-                coleccion = request.args.get('coleccion', "")
+                #coleccion = request.args.get('coleccion', "")
                 if len(coleccion) == 0:
                     log.error(f"GET ERROR: sin colección -> {request.args}")
                     resultado = {
                         "ok": False,
                         "code": "sin colección"
                     }
-                    return jsonify(resultado, status=400)
+                    return make_response(
+                        jsonify(resultado),
+                        400
+                    )
                 else:
                     log.info(f"GET: {coleccion}/{id}")
                     if id is None:
@@ -93,23 +96,31 @@ def do(coleccion: str = "", id: int = 0) -> Response:
                         "ok": False,
                         "code": "sin colección"
                     }
-                    return jsonify(resultado, status=400)
+                    return make_response(
+                        jsonify(resultado),
+                        400
+                    )
                 else:
                     log.info(f"POST: {coleccion} / {payload}")
                     data_back = {"coleccion": coleccion, "data": payload}
+            case _:
+                raise NotImplementedError(f'Se solicita {request.method} con carga: {payload}')
 
         queue.put((future, data_back))
         resultado = future.result(timeout=WAIT)
-        return jsonify(resultado, status=resultado.code)
+        return make_response(
+            jsonify(resultado),
+            resultado.code
+        )
 
     except KeyError:
-        return jsonify({"error": "DO: incorrect keys"}, 400)
+        return make_response(jsonify({"error": "DO: incorrect keys"}), 400)
 
     except concurrent.futures.CancelledError:
-        return jsonify({"error": "DO: cancelled"}, 449)
+        return make_response(jsonify({"error": "DO: cancelled"}), 449)
 
     except TimeoutError:
-        return jsonify({"error": "DO: timeout"}, 504)
+        return make_response(jsonify({"error": "DO: timeout"}), 504)
 
     #finally:
     #    pending.pop(request_id, None)
