@@ -1,0 +1,56 @@
+# app.py
+
+from pathlib import Path
+from flask import Flask
+from queue import Queue
+from threading import Thread
+
+import core.routes as routes
+import settings as glob_settings
+routes.settings = glob_settings
+
+#from core.routes import api
+api = routes.api
+
+log = glob_settings.initLoggin(Path(__file__).stem + ".log")
+routes.settings.log = log
+
+
+def dispatcher(queue):
+
+    while True:
+        future, payload = queue.get()
+        log.info(f"INICIO -> {payload}")
+
+        try:
+            resultado = worker(payload)
+            future.set_result(resultado)
+
+        except Exception as exc:
+            future.set_exception(exc)
+
+        finally:
+            log.info(f"FIN -> {payload}")
+            queue.task_done()
+
+
+%%WORKER%%
+
+
+def create_app():
+    app = Flask(__name__)
+
+    work_queue = Queue()
+
+    Thread(
+        target=dispatcher,
+        args=(work_queue,),
+        daemon=True
+    ).start()
+
+    app.extensions["work_queue"] = work_queue
+
+    app.register_blueprint(api)
+    log.info("App flask creada")
+
+    return app
