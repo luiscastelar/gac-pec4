@@ -12,6 +12,7 @@ def worker(payload: dict) -> dict:
     return {
         "status": "ok",
         "payload": payload,
-        "mensaje": "procesado"
+        "mensaje": "procesado",
+        "code": 200
     }
 # ----------------------------------------------------------------------------
