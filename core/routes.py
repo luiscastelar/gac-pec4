@@ -108,9 +108,10 @@ def do(coleccion: str = "", id: int = 0) -> Response:
 
         queue.put((future, data_back))
         resultado = future.result(timeout=WAIT)
+        log.debug(resultado)
         return make_response(
             jsonify(resultado),
-            resultado.code
+            resultado.get("code", 999)
         )
 
     except KeyError:
