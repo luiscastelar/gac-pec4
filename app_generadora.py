@@ -106,52 +106,8 @@ def getMetadatosDb(db_file: str) -> BaseDatos:
 
     # DONE: 1.6. Generación de metadatos
     metadatos = dbComun.generacionDeMetadatos(db)
-    utils.printInfo("1. Carga de metadatos de la bbdd")
+    utils.printInfo(f'1. Carga de metadatos de la bbdd: "{metadatos.nombre}"')
     return metadatos
-
-
-def loadDDL(tipo=DEFAULT):
-    # DONE: 2. Captura DDL de entrada
-    txt = '''Archivos de muestra preparados:
-  - ejemplos/dump-gac2.sql: DDL de ejemplo con tablas de alumnos, cursos y matrículas (MariaDB)
-  - ejemplos/db-sqlite.sql: DDL de ejemplo con tablas de albums, artists y tracks (SQLite)
-'''
-    print(txt)
-    match tipo:
-        case 0:  # DEFAULT
-            file = settings.TAREA_PATH + input('Selecciona el archivo SQL a analizar: ')
-        case 1:  # MARIA_DB
-            file = settings.TAREA_PATH + 'ejemplos/dump-gac2.sql'
-        case 2:  # SQLITE
-            file = settings.TAREA_PATH + 'ejemplos/db-sqlite.sql'
-        case _:  # DDL directo por consola
-            file = tipo
-    sql = File().load(file)
-    # ¿El script tiene contenido?
-    if len(sql) > 0:
-        print(f'1. Archivo {file} cargado correctamente.')
-    else:
-        utils.printError('Error cargando sql', settings.EXIT['NOT_FOUND'])
-
-    # DONE: Intentar inferencia de tipo de BBDD (mariadb, sqlite, oracledb,...)
-    tipoDB = TUI.getTipoDB(sql)
-    logging.info(f'Tipo de bbdd: {tipoDB}')
-
-    return sql, tipoDB
-
-
-def getDriverSalida(tipoSalida):
-    # DONE: 11. Importacion de driver salida según tipo (DAO)
-    match tipoSalida:
-        case 'php':
-            from libs import phpSalida as salida
-        case 'python':
-            from libs import pythonSalida as salida
-        case _:
-            utils.printError(f'Gestor de BBDD {tipoSalida} no disponible', settings.EXIT['FORMAT_ERROR'])
-
-    salida.settings = settings  # Cargamos las variables globales en el driver que corresponda
-    return salida
 
 
 def generateApp(metadatos, file: str):
@@ -211,6 +167,7 @@ class {tabla.nombre.capitalize()}DAO:
 """
         with open(f"{settings.TAREA_PATH}/daos/{tabla.nombre.capitalize()}DAO.py", 'w') as f:
             f.write(dao_content)
+    utils.printInfo(f'2. DAOs  generados: {", ".join([t.nombre for t in metadatos.tablas])}')
 
 
 # Autocargador de programa externo
