@@ -7,9 +7,9 @@ import logging
 TAREA_PATH = os.path.dirname(__file__) + '/'
 realPathDB = ''
 
-LOGGING = logging.INFO       # modo de depuración
+LOGGING = logging.DEBUG       # modo de depuración
 
-FILE_LOGGIN = TAREA_PATH + 'app.log'
+FILE_LOGGIN = None
 ENV='.env'
 ENTRADAS = {
    'MARIADB': 'mariadb',
@@ -96,16 +96,16 @@ exitCode = {
 #servidor = {}
 
 
-
 # ---------------------------------------------------------------------
 # # Opciones de depuración:
 #  - DEBUG, INFO, WARNING, ERROR, CRITICAL
 # ---------------------------------------------------------------------
-def initLoggin():
-    logging.basicConfig(filename = FILE_LOGGIN,
+def initLoggin(file):
+    global FILE_LOGGING
+
+    FILE_LOGGING = TAREA_PATH + file  # TAREA_PATH + 'app_generadora.log'
+    logging.basicConfig(filename = FILE_LOGGING,
                             filemode = 'a',
                             level = LOGGING,
                             format='''%(asctime)s - f:%(module)s:%(lineno)d [%(levelname)s]:\n%(message)s''')
     return logging
-
-logger = initLoggin()
