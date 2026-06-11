@@ -1,0 +1,17 @@
+# ----------------------------------------------------------------------------
+# Plantilla: WORKER
+# ----------------------------------------------------------------------------
+def worker(payload: dict) -> dict:
+    """Procesador de tareas (llama a los DAO)"""
+    log.info(f"Procesando: {payload}")
+
+    # retardo para pruebas
+    import time
+    time.sleep(10)
+
+    return {
+        "status": "ok",
+        "payload": payload,
+        "mensaje": "procesado"
+    }
+# ----------------------------------------------------------------------------
