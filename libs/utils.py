@@ -41,7 +41,7 @@ def loadEnvironmentVar(tipoDB: str) -> dict:
     )
     settings.logging.debug(f'Datos conexión a variablesDeEntorno: {variablesDeEntorno}')
     if len(variablesDeEntorno) > 0:
-        print(f'2. Tipo {tipoDB} procesado y datos de conexión recibidos')
+        settings.logging.debug(f'2. Tipo {tipoDB} procesado y datos de conexión recibidos')
     else:
         printError('Error datos de conexion', settings.EXIT['NOT_FOUND'])
     return variablesDeEntorno

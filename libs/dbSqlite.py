@@ -29,7 +29,7 @@ class DbSqlite(DbTipo):
         :return: Conexión a la base de datos
         """
         self.fileDB = self.TAREA_PATH + host
-        self.printInfo(f"3. Conectando a la base de datos SQLite en '{self.fileDB}'...")
+        self.logging.debug(f"3. Conectando a la base de datos SQLite en '{self.fileDB}'...")
         self.conn = sqlite3.connect(self.fileDB)
         self.name = host
         return self.conn

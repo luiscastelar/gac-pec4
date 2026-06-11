@@ -47,7 +47,7 @@ def getConexionDB(db, variablesDeEntorno):
         conn = db.getConn(host, port, user, password, dbName)
 
     except Exception as e:
-        print(f'Error al conectar a la base de datos: {e} (db={host})')
+        utils.printError(f'Error al conectar a la base de datos: {e} (db={host})')
         try:
             # Cuando nos queremos conectar para crear una db nueva
             conn = db.getConn(host, port, user, password, None)
@@ -78,7 +78,7 @@ def generacionDeMetadatos(db):
     """
 
     dbName = db.name
-    print(f'4. Generando metadatos de la base de datos {dbName}...')
+    settings.logging.debug(f'4. Generando metadatos de la base de datos {dbName}...')
 
     # Captura de comandos normalizados y enconcreto del "show_tables"
     comandosSQL = db.comandosSQL
@@ -114,5 +114,6 @@ def generacionDeMetadatos(db):
             tabla.columnas.append(columna)  # añadimos columna a columnas[]
         tablas.append(tabla)                # añadimos tabla a tablas[]
     metadatos.tablas = tablas               # añadimos tablas[] a db
-    settings.logging.debug('Metadatos capturados:\n' + str(metadatos))
+    #settings.logging.debug('Metadatos capturados:\n' + str(metadatos))
+    settings.logging.info("Metadatos generados")
     return metadatos
