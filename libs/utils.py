@@ -1,3 +1,5 @@
+from libs.Env import Env
+
 settings = None
 
 
@@ -28,3 +30,18 @@ def printInfo(msg):
     """
     settings.logging.info(msg)
     print(msg)
+
+
+def loadEnvironmentVar(tipoDB: str) -> dict:
+    # DONE: 3. Captura de variables de entorno comunes a todos los tipos de salida
+    variablesDeEntorno = {}
+    variablesDeEntorno['TIPO_DB'] = tipoDB
+    variablesDeEntorno.update(
+        Env.get(settings.TAREA_PATH + 'config/' + tipoDB + '/config')
+    )
+    settings.logging.debug(f'Datos conexión a variablesDeEntorno: {variablesDeEntorno}')
+    if len(variablesDeEntorno) > 0:
+        print(f'2. Tipo {tipoDB} procesado y datos de conexión recibidos')
+    else:
+        printError('Error datos de conexion', settings.EXIT['NOT_FOUND'])
+    return variablesDeEntorno

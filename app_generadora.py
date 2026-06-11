@@ -90,7 +90,7 @@ def initGlobalSettings():
 
     # DONE: 1.2. Carga de variables de entorno
     tipoDB = "sqlite"
-    variablesDeEntorno = loadEnvironmentVar(tipoDB)
+    variablesDeEntorno = utils.loadEnvironmentVar(tipoDB)
 
 
 def getMetadatosDb(db_file: str) -> BaseDatos:
@@ -138,21 +138,6 @@ def loadDDL(tipo=DEFAULT):
     logging.info(f'Tipo de bbdd: {tipoDB}')
 
     return sql, tipoDB
-
-
-def loadEnvironmentVar(tipoDB: str) -> dict:
-    # DONE: 3. Captura de variables de entorno comunes a todos los tipos de salida
-    variablesDeEntorno = {}
-    variablesDeEntorno['TIPO_DB'] = tipoDB
-    variablesDeEntorno.update(
-        Env.get(settings.TAREA_PATH + 'config/' + tipoDB + '/config')
-    )
-    log.debug(f'Datos conexión a variablesDeEntorno: {variablesDeEntorno}')
-    if len(variablesDeEntorno) > 0:
-        print(f'2. Tipo {tipoDB} procesado y datos de conexión recibidos')
-    else:
-        utils.printError('Error datos de conexion', settings.EXIT['NOT_FOUND'])
-    return variablesDeEntorno
 
 
 def getDriverSalida(tipoSalida):
