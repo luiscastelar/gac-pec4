@@ -13,27 +13,7 @@ import libs.dbComun as dbComun
 # ---------------------------------------------------------------------
 # Constantes de sistema
 # ---------------------------------------------------------------------
-# Constantes de posción de argumentos de entrada
-ARG_FILE_SCRIPT = 0
-ARG_DB_SELECT = 1
-ARG_OUT_SELECT = 2
-ARG_OP_OVER_DB = 3
-
-# Constantes de selección de argumentos
-DEFAULT = 0
-DB_MARIA_DB = 1
-DB_SQLITE = 2
-OUT_PYTHON = 1
-OUT_PHP = 2
-CORRECTOR_ARRAY = 1  # los arrays comienzan por 0 por lo que debemos sumar el corrector en las comparaciones posicionales
-
-# Constantes de operación sobre db
-NO_SOPORTADO = 0
-DROP_DB = 1
-CREATE_DB = 2
-LOAD_SCRIPT = 3
-
-# Aviso
+# Aviso que marca el inicio de los archivos generados
 AVISO = f'''# {"*"*77}
 #   Archivo generado desde plantilla -> NO TOCAR                              *
 # {"*"*77}
@@ -46,14 +26,12 @@ AVISO = f'''# {"*"*77}
 log = None
 variablesDeEntorno = None
 
+
 # ---------------------------------------------------------------------
 # Main()
 # ---------------------------------------------------------------------
 def main():
     # DONE 0. Inicializar variables globales
-    global log
-    global variablesDeEntorno
-
     initGlobalSettings()
 
     # DONE 1. Análisis de DB (refactorizar)
@@ -62,10 +40,10 @@ def main():
     # DONE 2. Generarción de DAOs
     generateDAOs(metadatos)
 
-    # DONE 4. QUEUE-SINGLETON
+    # DONE 3. QUEUE-SINGLETON
     # No requiere personalización. Emplearemos implementación estándard
 
-    # DONE 3. WORKER
+    # DONE 4. WORKER
     generateWorker(metadatos)
 
     # DONE 5. DISPACHER
