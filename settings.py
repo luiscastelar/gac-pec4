@@ -7,9 +7,9 @@ import logging
 TAREA_PATH = os.path.dirname(__file__) + '/'
 realPathDB = ''
 
-LOGGING = logging.DEBUG       # modo de depuración
+LOG_LEVEL = logging.DEBUG       # modo de depuración
 
-FILE_LOGGIN = None
+FILE_LOGGING = None
 ENV='.env'
 ENTRADAS = {
    'MARIADB': 'mariadb',
@@ -104,8 +104,27 @@ def initLoggin(file):
     global FILE_LOGGING
 
     FILE_LOGGING = TAREA_PATH + file  # TAREA_PATH + 'app_generadora.log'
+    
     logging.basicConfig(filename = FILE_LOGGING,
                             filemode = 'a',
-                            level = LOGGING,
-                            format='''%(asctime)s - f:%(module)s:%(lineno)d [%(levelname)s]:\n%(message)s''')
+                            level = LOG_LEVEL,
+                            format='''%(asctime)s - %(filename)s:%(lineno)d [%(levelname)s]:\n%(message)s''')
     return logging
+    
+    LOGFORMAT = "  %(log_color)s%(levelname)-8s%(reset)s | %(log_color)s%(message)s%(reset)s"
+    from colorlog import ColoredFormatter
+    logging.root.setLevel(LOG_LEVEL)
+    formatter = ColoredFormatter(LOGFORMAT)
+    stream = logging.StreamHandler()
+    stream.setLevel(LOG_LEVEL)
+    stream.setFormatter(formatter)
+    log = logging.getLogger(FILE_LOGGING)
+    log.setLevel(LOG_LEVEL)
+    log.addHandler(stream)
+
+    log.debug("A quirky message only developers care about")
+    log.info("Curious users might want to know this")
+    log.warning("Something is wrong and any user should be informed")
+    log.error("Serious stuff, this is red for a reason")
+    log.critical("OH NO everything is on fire")
+    return log
