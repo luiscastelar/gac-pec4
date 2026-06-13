@@ -63,7 +63,7 @@ def main():
     # No requiere personalización. Emplearemos implementación estándard
 
     # TODO 3. WORKER
-    
+    generateWorker(metadatos)
 
     # TODO 5. DISPACHER
 
@@ -107,7 +107,24 @@ def getMetadatosDb(db_file: str) -> BaseDatos:
     # DONE: 1.6. Generación de metadatos
     metadatos = dbComun.generacionDeMetadatos(db)
     utils.printInfo(f'1. Carga de metadatos de la bbdd: "{metadatos.nombre}"')
+    metadatos.db_file = db_file
     return metadatos
+
+
+def generateWorker(metadatos):
+    BASE = settings.TAREA_PATH
+
+    # Cargamos las plantillas con las marcas a sustituir
+    worker_final = File().load('core/worker.template')
+    tabla_final = ''
+    for tabla in metadatos.tablas:
+        tabla_inicial = File().load('core/table.template').replace('%%_NAME_%%', tabla.nombre)
+        tabla_final += tabla_inicial.replace('%%_DAO_%%', tabla.nombre.capitalize()+'DAO')
+
+    worker_final = worker_final.replace('%%_TABLAS_%%', tabla_final[:-1])
+    File().save('core/worker.py', worker_final)
+
+    print(worker_final)
 
 
 def generateApp(metadatos, file: str):
@@ -115,17 +132,15 @@ def generateApp(metadatos, file: str):
     BASE = settings.TAREA_PATH
     with \
         open(BASE + "core/app.template", "r", encoding="utf-8") as plantilla, \
-        open(BASE + "app.py", "w", encoding="utf-8") as escritura:
+        open(BASE + file, "w", encoding="utf-8") as escritura:
         for linea in plantilla:
-            if linea == '%%WORKER%%\n':
-                """Forma correcta:
-                with open(BASE + "core/worker.template", "r", encoding="utf-8") as plantilla_worker:
-                    for linea_worker in plantilla_worker:
-                        escritura.write(linea_worker)
-                """
-                escritura.write( File().load(BASE + "core/worker.template") )
-            else:
-                escritura.write(linea)
+            match linea:
+                case '%%_WORKER_%%\n':
+                    escritura.write( File().load(BASE + "core/worker.py") )  # forma rápida pero con consumo brutal de memoria
+                case '%%_DB_FILE_%%\n':
+                    escritura.write(f'db_file = "{metadatos.db_file}"\n')
+                case _:
+                    escritura.write(linea)
     log.info("6. Generar app base")
     return None
 
@@ -141,13 +156,19 @@ def generateDAOs(metadatos):
         placeholders = ', '.join(['?' for _ in tabla.columnas])
         set_clause = ', '.join([f"{columna.nombre}=?" for columna in tabla.columnas])
         dao_content = f"""
-class {tabla.nombre.capitalize()}DAO:
-    def __init__(self, db_connection):
-        self.db_connection = db_connection
+import sqlite3
 
-    def get_{tabla.nombre}(self, id):
-        query = "SELECT * FROM {tabla.nombre} WHERE id = ?"
-        return self.db_connection.execute(query, (id,)).fetchone()
+class {tabla.nombre.capitalize()}DAO:
+    def __init__(self, fileDB):
+        self.db_connection = sqlite3.connect(fileDB)
+
+    def get_{tabla.nombre}(self, id = 0):
+        query = "SELECT * FROM alumnos"
+        if id == 0:
+            return self.db_connection.execute(query).fetchall()
+        else:
+            query += ' WHERE id = ?'
+            return self.db_connection.execute(query, (id,)).fetchone()
 
     def create_{tabla.nombre}(self, data):
         query = "INSERT INTO {tabla.nombre} ({columnas}) VALUES ({placeholders})"

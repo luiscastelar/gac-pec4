@@ -14,13 +14,13 @@ api = routes.api
 
 log = glob_settings.initLoggin(Path(__file__).stem + ".log")
 routes.settings.log = log
-
+%%_DB_FILE_%%
 
 def dispatcher(queue):
 
     while True:
         future, payload = queue.get()
-        log.info(f"INICIO -> {payload}")
+        log.debug(f"Ini dispacher -> {payload}")
 
         try:
             resultado = worker(payload)
@@ -30,11 +30,11 @@ def dispatcher(queue):
             future.set_exception(exc)
 
         finally:
-            log.info(f"FIN -> {payload}")
+            log.debug(f"Fin dispacher -> {payload}")
             queue.task_done()
 
 
-%%WORKER%%
+%%_WORKER_%%
 
 
 def create_app():
@@ -51,6 +51,6 @@ def create_app():
     app.extensions["work_queue"] = work_queue
 
     app.register_blueprint(api)
-    log.info("App flask creada")
+    log.info(f"{'-'*79}\nApp flask creada")
 
     return app

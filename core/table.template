@@ -1,0 +1,17 @@
+        case '%%_NAME_%%':
+            from daos.%%_DAO_%% import %%_DAO_%%
+            v%%_DAO_%% = %%_DAO_%%( db_file )
+            result = v%%_DAO_%%.get_%%_NAME_%%( id )
+
+            # Traducimos SQL code a HTTP code
+            if result is None:  # No return
+                code = 500
+            else:               # SQL ok -> code 0 or 101:
+                code = 200
+            
+            return {
+                "code": code,
+                "payload": payload,
+                "res": result
+            }
+

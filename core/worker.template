@@ -3,16 +3,19 @@
 # ----------------------------------------------------------------------------
 def worker(payload: dict) -> dict:
     """Procesador de tareas (llama a los DAO)"""
-    log.info(f"Procesando: {payload}")
+    log.debug(f"Procesando: {payload}")
 
+    """
     # retardo para pruebas
     import time
-    time.sleep(10)
+    time.sleep(1)
+    """
 
-    return {
-        "status": "ok",
-        "payload": payload,
-        "mensaje": "procesado",
-        "code": 200
-    }
+    coleccion = payload.get('coleccion', '')
+    id = payload.get('id', None)
+    match coleccion:
+%%_TABLAS_%%        
+        case _:
+            return {'code': 500, 'error': f'Coleccion {coleccion} incorrecta'}
+
 # ----------------------------------------------------------------------------

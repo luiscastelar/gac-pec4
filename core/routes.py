@@ -36,7 +36,12 @@ if request.method == 'POST':
     headers = {'Content-Type': 'application/json'}
     return "Mensaje de salida", 200, headers  # msg, codigo y cabeceras opcionales
 """
-
+#@user.route('/<user_id>', defaults={'username': None})
+#@user.route('/<user_id>/<username>')
+@api.route('/API/v1/<coleccion>',
+           defaults={'id': 0},
+           methods=["GET", "POST", "PUT", "DELETE"]
+           )
 @api.route("/API/v1/<coleccion>/<int:id>",
            methods=["GET", "POST", "PUT", "DELETE"]
            )
@@ -74,35 +79,35 @@ def do(coleccion: str = "", id: int = 0) -> Response:
                 #coleccion = request.args.get('coleccion', "")
                 if len(coleccion) == 0:
                     log.error(f"GET ERROR: sin colección -> {request.args}")
-                    resultado = {
-                        "ok": False,
-                        "code": "sin colección"
-                    }
                     return make_response(
-                        jsonify(resultado),
+                        jsonify({"ok": False, "code": "sin colección"}),
                         400
                     )
                 else:
-                    log.info(f"GET: {coleccion}/{id}")
+                    log.debug(f"GET: {coleccion}/{id}")
                     if id is None:
                         id = 0
-                    data_back = {"coleccion": coleccion, "id": id}
+                    data_back = {
+                        "coleccion": coleccion,
+                        "ope": "read",
+                        "id": id
+                    }
             case "POST":
                 payload = request.get_json()
                 coleccion = payload.get("coleccion", None)
                 if coleccion is None:
                     log.error(f"POST ERROR: sin colección -> {payload}")
-                    resultado = {
-                        "ok": False,
-                        "code": "sin colección"
-                    }
                     return make_response(
-                        jsonify(resultado),
+                        jsonify({"ok": False, "code": "sin colección"}),                        
                         400
                     )
                 else:
-                    log.info(f"POST: {coleccion} / {payload}")
-                    data_back = {"coleccion": coleccion, "data": payload}
+                    log.debug(f"POST: {coleccion} / {payload}")
+                    data_back = {
+                        "coleccion": coleccion,
+                        "ope": "create",
+                        "data": payload
+                    }
             case _:
                 raise NotImplementedError(f'Se solicita {request.method} con carga: {payload}')
 
