@@ -35,6 +35,12 @@ DROP_DB = 1
 CREATE_DB = 2
 LOAD_SCRIPT = 3
 
+# Aviso
+AVISO = f'''# {"*"*77}
+#   Archivo generado desde plantilla -> NO TOCAR                              *
+# {"*"*77}
+'''
+
 
 # ---------------------------------------------------------------------
 # Variables globales
@@ -115,7 +121,7 @@ def generateWorker(metadatos):
     BASE = settings.TAREA_PATH
 
     # Cargamos las plantillas con las marcas a sustituir
-    worker_final = File().load('core/worker.template')
+    worker_final = AVISO + File().load('core/worker.template')
     tabla_final = ''
     for tabla in metadatos.tablas:
         tabla_inicial = File().load('core/table.template').replace('%%_NAME_%%', tabla.nombre)
@@ -123,8 +129,7 @@ def generateWorker(metadatos):
 
     worker_final = worker_final.replace('%%_TABLAS_%%', tabla_final[:-1])
     File().save('core/worker.py', worker_final)
-
-    print(worker_final)
+    utils.printInfo(f'3. WORKER  generado')
 
 
 def generateApp(metadatos, file: str):
@@ -133,6 +138,7 @@ def generateApp(metadatos, file: str):
     with \
         open(BASE + "core/app.template", "r", encoding="utf-8") as plantilla, \
         open(BASE + file, "w", encoding="utf-8") as escritura:
+        escritura.write( AVISO )
         for linea in plantilla:
             match linea:
                 case '%%_WORKER_%%\n':
@@ -155,7 +161,7 @@ def generateDAOs(metadatos):
         columnas = ', '.join([column.nombre for column in tabla.columnas])
         placeholders = ', '.join(['?' for _ in tabla.columnas])
         set_clause = ', '.join([f"{columna.nombre}=?" for columna in tabla.columnas])
-        dao_content = f"""
+        dao_content = f"""{AVISO}
 import sqlite3
 
 class {tabla.nombre.capitalize()}DAO:

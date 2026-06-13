@@ -8,7 +8,7 @@
                 code = 500
             else:               # SQL ok -> code 0 or 101:
                 code = 200
-            
+
             return {
                 "code": code,
                 "payload": payload,
