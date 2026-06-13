@@ -94,7 +94,6 @@ def do(coleccion: str = "", id: int = 0) -> Response:
                     }
             case "POST":
                 payload = request.get_json()
-                coleccion = payload.get("coleccion", None)
                 if coleccion is None:
                     log.error(f"POST ERROR: sin colección -> {payload}")
                     return make_response(
@@ -108,12 +107,46 @@ def do(coleccion: str = "", id: int = 0) -> Response:
                         "ope": "create",
                         "data": payload
                     }
+            case "PUT":
+                payload = request.get_json()
+                if coleccion is None:
+                    log.error(f"PUT ERROR: sin colección -> {payload}")
+                    return make_response(
+                        jsonify({"ok": False, "code": "sin colección"}),                        
+                        400
+                    )
+                else:
+                    id = payload.get('id', None)
+                    log.debug(f"PUT: {coleccion} / {id} / {payload}")
+                    data_back = {
+                        "coleccion": coleccion,
+                        "ope": "update",
+                        "id": id,
+                        "data": payload
+                    }
+            case "DELETE":
+                payload = request.get_json()
+                if coleccion is None:
+                    log.error(f"DELETE ERROR: sin colección -> {payload}")
+                    return make_response(
+                        jsonify({"ok": False, "code": "sin colección"}),                        
+                        400
+                    )
+                else:
+                    id = payload.get('id', None)
+                    log.debug(f"DELETE: {coleccion} / {id} / {payload}")
+                    data_back = {
+                        "coleccion": coleccion,
+                        "ope": "delete",
+                        "id": id
+                    }
             case _:
+                payload = request.get_json()
                 raise NotImplementedError(f'Se solicita {request.method} con carga: {payload}')
 
         queue.put((future, data_back))
         resultado = future.result(timeout=WAIT)
-        log.debug(resultado)
+        log.info(resultado)
         return make_response(
             jsonify(resultado),
             resultado.get("code", 999)
