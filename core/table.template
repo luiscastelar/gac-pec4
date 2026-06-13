@@ -1,7 +1,17 @@
         case '%%_NAME_%%':
             from daos.%%_DAO_%% import %%_DAO_%%
             v%%_DAO_%% = %%_DAO_%%( db_file )
-            result = v%%_DAO_%%.get_%%_NAME_%%( id )
+            match ope:
+                case 'read':
+                    result = v%%_DAO_%%.get_%%_NAME_%%( id )
+                case 'create':
+                    result = v%%_DAO_%%.create_%%_NAME_%%( payload.get('data', {}) )
+                case 'update':
+                    result = v%%_DAO_%%.update_%%_NAME_%%( id, payload.get('data', {}) )
+                case 'delete':
+                    result = v%%_DAO_%%.delete_%%_NAME_%%( id )
+                case _:
+                    result = "Método no soportado"
 
             # Traducimos SQL code a HTTP code
             if result is None:  # No return

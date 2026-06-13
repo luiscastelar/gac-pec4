@@ -5,14 +5,14 @@ def worker(payload: dict) -> dict:
     """Procesador de tareas (llama a los DAO)"""
     log.debug(f"Procesando: {payload}")
 
-    """
-    # retardo para pruebas
+    # retardo para simular carga de la base de datos
     import time
-    time.sleep(1)
-    """
+    time.sleep(2)
+
 
     coleccion = payload.get('coleccion', '')
     id = payload.get('id', None)
+    ope = payload.get('ope', None)
     match coleccion:
 %%_TABLAS_%%        
         case _:
