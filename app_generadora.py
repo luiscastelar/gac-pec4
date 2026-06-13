@@ -58,27 +58,28 @@ def main():
 
     initGlobalSettings()
 
-    # TODO 1. Análisis de DB (refactorizar)
+    # DONE 1. Análisis de DB (refactorizar)
     metadatos = getMetadatosDb(variablesDeEntorno['SERVER_DB'])
 
-    # TODO 2. Generarción de DAOs
+    # DONE 2. Generarción de DAOs
     generateDAOs(metadatos)
 
-    log.info("voy por aquí")
     # DONE 4. QUEUE-SINGLETON
     # No requiere personalización. Emplearemos implementación estándard
 
-    # TODO 3. WORKER
+    # DONE 3. WORKER
     generateWorker(metadatos)
 
-    # TODO 5. DISPACHER
+    # DONE 5. DISPACHER
+    # En plantilla app.template
 
-
-    # TODO 6. APP (endpoints)
+    # DONE 6. APP (endpoints)
     NOMBRE_APP_FINAL = "app.py"
     generateApp(metadatos, NOMBRE_APP_FINAL)
 
-    # TODO 7. TESTS
+    # DONE 7. TESTS
+    # Ejecutar el script de testeo de forma manual con 
+    #     python3 test_app.py
 
 
 # ----------------------------------------------------------------------
@@ -177,20 +178,28 @@ class {tabla.nombre.capitalize()}DAO:
             return self.db_connection.execute(query, (id,)).fetchone()
 
     def create_{tabla.nombre}(self, data):
+        query = "SELECT id FROM {tabla.nombre} ORDER BY id DESC LIMIT 1"
+        id = self.db_connection.execute(query).fetchone()
+        data_new = dict()  # Como los dict a partir de 3.6 son ordenados...
+        data_new['id'] = id[0] + 1
+        data_new.update(**data)
         query = "INSERT INTO {tabla.nombre} ({columnas}) VALUES ({placeholders})"
-        self.db_connection.execute(query, tuple(data.values()))
+        self.db_connection.execute(query, tuple(data_new.values()))
         self.db_connection.commit()
-        return self.db_connection.lastrowid
+        #return self.db_connection.lastrowid -> debe ser el cursor
+        return data_new['id']
 
     def update_{tabla.nombre}(self, id, data):
         query = f"UPDATE {tabla.nombre} SET {set_clause} WHERE id = ?"
         self.db_connection.execute(query, tuple(data.values()) + (id,))
         self.db_connection.commit()
+        return 0  # ok
 
     def delete_{tabla.nombre}(self, id):
         query = "DELETE FROM {tabla.nombre} WHERE id = ?"
         self.db_connection.execute(query, (id,))
         self.db_connection.commit()
+        return 0  # ok
 """
         with open(f"{settings.TAREA_PATH}/daos/{tabla.nombre.capitalize()}DAO.py", 'w') as f:
             f.write(dao_content)
