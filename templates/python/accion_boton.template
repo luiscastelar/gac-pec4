@@ -1,7 +1,0 @@
-    def %%TEXTO%%(self):
-        import tabla_%%TEXTO%%
-        self._abrir_ventana_hija(
-            "Gestión de %%TEXTO%%",
-            tabla_%%TEXTO%%.create_%%TEXTO%%_widgets
-        )
-

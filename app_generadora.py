@@ -1,12 +1,10 @@
 # ---------------------------------------------------------------------
 # Importaciones
 # ---------------------------------------------------------------------
-import subprocess
 from pathlib import Path
 
 from libs.Env import Env
 from libs.contentOfFile import File
-import libs.TUI as TUI
 import libs.utils as utils
 import settings
 import libs.dbComun as dbComun
@@ -90,7 +88,6 @@ def initGlobalSettings():
     global variablesDeEntorno
     # DONE: 0. Cargamos las variables globales en settings
     log = settings.initLoggin(Path(__file__).stem + ".log")
-    TUI.settings = settings
     utils.settings = settings
     dbComun.settings = settings
     log.info('0. Variables globales cargadas en settings')
