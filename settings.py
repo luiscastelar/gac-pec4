@@ -108,7 +108,7 @@ def initLoggin(file):
     logging.basicConfig(filename = FILE_LOGGING,
                             filemode = 'a',
                             level = LOG_LEVEL,
-                            format='''%(asctime)s - %(filename)s:%(lineno)d [%(levelname)s]:\n%(message)s''')
+                            format='''%(asctime)s - %(filename)10s:%(lineno)3d [%(levelname)6s]: %(message)s''')
     return logging
     
     LOGFORMAT = "  %(log_color)s%(levelname)-8s%(reset)s | %(log_color)s%(message)s%(reset)s"
