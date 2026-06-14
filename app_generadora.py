@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # ---------------------------------------------------------------------
 # Importaciones
 # ---------------------------------------------------------------------
@@ -46,7 +47,7 @@ def main():
     # DONE 4. WORKER
     generateWorker(metadatos)
 
-    # DONE 5. DISPACHER
+    # DONE 5. DISPATCHER
     # En plantilla app.template
 
     # DONE 6. APP (endpoints)
