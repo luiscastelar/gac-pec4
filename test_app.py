@@ -1,6 +1,6 @@
 from threading import Thread
 import requests, json, time
-
+import random
 
 URL = 'http://localhost:5000/API/v1'
 tablas = ["alumnos", "calificaciones"]
@@ -80,7 +80,7 @@ for metodo in metodos:
             )
             threads_running.append(t)
             t.start()
-            time.sleep(1.2)
+            time.sleep( random.random() )
 
 # Wait for all threads to finish
 for t in threads_running:
